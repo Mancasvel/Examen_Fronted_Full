@@ -17,20 +17,27 @@ import deliveredOrderImage from '../../../assets/order_status_delivered.png'
 import ImageCard from '../../components/ImageCard'
 
 export default function OrdersScreen ({ navigation, route }) {
+  /* SOLUTION - Examen Orders: Pantalla completa con listado, analíticas y cambio de estado */
+  
   const [restaurant, setRestaurant] = useState({})
+  
+  // RF.01: Estado para almacenar los pedidos del restaurante
+  const [orders, setOrders] = useState({})
+  
+  // RF.03: Estado para almacenar las analíticas del restaurante
+  const [analytics, setAnalytics] = useState(null)
 
-  const [orders, setOrders] = useState({}) // SOLUTION. Excercise - Restaurant orders listing
-  const [analytics, setAnalytics] = useState(null) // SOLUTION. Excercise - Restaurant analytics
-
+  // Cargar datos al montar o cuando cambia la ruta (después de editar un pedido)
   useEffect(() => {
-    fetchRestaurantDetail()
-    fetchRestaurantOrders() // SOLUTION. Excercise - Restaurant orders listing
-    fetchRestaurantAnalytics() // SOLUTION. Excercise - Restaurant analytics
+    fetchRestaurantDetail() // Datos del restaurante (nombre, logo, etc.)
+    fetchRestaurantOrders() // RF.01: Obtener lista de pedidos
+    fetchRestaurantAnalytics() // RF.03: Obtener analíticas
   }, [route])
 
+  // RF.03: Función para obtener las analíticas del restaurante
   const fetchRestaurantAnalytics = async () => {
-    // SOLUTION. Excercise - Restaurant analytics
     try {
+      // Endpoint que devuelve: { invoicedToday, numPendingOrders, numDeliveredTodayOrders, numYesterdayOrders }
       const fetchedAnalytics = await getRestaurantAnalytics(route.params.id)
       setAnalytics(fetchedAnalytics)
     } catch (error) {
@@ -43,9 +50,10 @@ export default function OrdersScreen ({ navigation, route }) {
     }
   }
 
+  // RF.01: Función para obtener los pedidos del restaurante
   const fetchRestaurantOrders = async () => {
-    // SOLUTION. Excercise - Restaurant orders listing
     try {
+      // Endpoint GET /restaurants/:restaurantId/orders
       const fetchedOrders = await getRestaurantOrders(route.params.id)
       setOrders(fetchedOrders)
     } catch (error) {
@@ -58,16 +66,20 @@ export default function OrdersScreen ({ navigation, route }) {
     }
   }
 
+  // RF.04: Función para cambiar el estado de un pedido al siguiente
   const handleNextStatus = async (order) => {
-    /// SOLUTION. Excercise - Order status change
     try {
+      // nextStatus maneja la transición: pending→in process→sent→delivered
       await nextStatus(order)
+      
       showMessage({
         message: `Order ${order.id} status updated`,
         type: 'success',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
       })
+      
+      // IMPORTANTE: Refrescar tanto pedidos como analíticas después del cambio
       fetchRestaurantOrders()
       fetchRestaurantAnalytics()
     } catch (error) {
@@ -80,10 +92,11 @@ export default function OrdersScreen ({ navigation, route }) {
     }
   }
 
+  // RF.03: Renderizar la sección de analíticas (4 métricas en 2 filas de 2 columnas)
   const renderAnalytics = () => {
     return (
-      // SOLUTION. Excercise - Restaurant analytics
       <View style={styles.analyticsContainer}>
+          {/* Primera fila: Invoiced today y Pending orders */}
           <View style={styles.analyticsRow}>
             <View style={styles.analyticsCell}>
               <TextRegular textStyle={styles.text}>
@@ -103,6 +116,7 @@ export default function OrdersScreen ({ navigation, route }) {
             </View>
           </View>
 
+          {/* Segunda fila: Delivered today y Yesterday orders */}
           <View style={styles.analyticsRow}>
             <View style={styles.analyticsCell}>
                 <TextRegular textStyle={styles.text}>
@@ -154,20 +168,22 @@ export default function OrdersScreen ({ navigation, route }) {
     }
   }
 
+  // RF.01: Función para renderizar cada pedido en la FlatList
   const renderOrder = ({ item }) => {
-    // SOLUTION. Excercise - Restaurant orders listing(without the next status button)
     return (
       <ImageCard
-        imageUri={getOrderImage(item.status)}
+        imageUri={getOrderImage(item.status)} // Imagen según el estado del pedido
         title={`Order created at ${item.createdAt}`}
       >
+        {/* Información del pedido según RF.01 */}
         <TextRegular numberOfLines={2}>Status: {item.status}</TextRegular>
         <TextRegular numberOfLines={2}>Address: {item.address}</TextRegular>
         <TextSemiBold>{item.price.toFixed(2)}€</TextSemiBold>
 
+        {/* Contenedor de botones de acción */}
         <View style={styles.actionButtonsContainer}>
 
-          {/* SOLUTION. Excercise - Edit order */}
+          {/* RF.02: Botón para editar el pedido (dirección y precio) */}
           <Pressable
             onPress={() => navigation.navigate('EditOrderScreen', { orderId: item.id })}
             style={({ pressed }) => [
@@ -184,7 +200,8 @@ export default function OrdersScreen ({ navigation, route }) {
             </View>
           </Pressable>
 
-          {/* SOLUTION. Excercise - Order status change */}
+          {/* RF.04: Botón para avanzar al siguiente estado 
+              IMPORTANTE: Solo se muestra si el estado NO es 'delivered' */}
           {item.status !== 'delivered' &&
             <Pressable
               onPress={() => handleNextStatus(item)}

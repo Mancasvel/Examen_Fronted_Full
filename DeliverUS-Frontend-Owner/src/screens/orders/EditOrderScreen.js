@@ -11,23 +11,32 @@ import * as GlobalStyles from '../../styles/GlobalStyles'
 import { showMessage } from 'react-native-flash-message'
 
 export default function EditOrderScreen ({ navigation, route }) {
-  const [order, setOrder] = useState({})
+  /* SOLUTION - Examen Orders RF.02: Edición de pedidos (solo address y price) */
+  
+  // Estados necesarios para la edición
+  const [order, setOrder] = useState({}) // Order completo para tener acceso a restaurantId
   const [initialValues, setInitialValues] = useState({ address: '', price: '' })
   const [backendErrors, setBackendErrors] = useState([])
 
+  // Validación: address obligatorio, price obligatorio y mayor que 0
   const validationSchema = yup.object().shape({
     address: yup.string().required('Address is required'),
-    price: yup.number().required('Price is required').moreThan(0)
+    price: yup.number().required('Price is required').moreThan(0, 'Price must be greater than 0')
   })
 
+  // Cargar datos del pedido al montar el componente
   useEffect(() => {
     async function fetchOrder () {
       try {
+        // Obtener el pedido por ID desde el backend
         const fetchedOrder = await getById(route.params.orderId)
         setOrder(fetchedOrder)
+        
+        // IMPORTANTE: Mapear manualmente los campos necesarios a initialValues
+        // Solo editamos address y price según el enunciado
         setInitialValues({
           address: fetchedOrder.address,
-          price: fetchedOrder.price.toString()
+          price: fetchedOrder.price.toString() // Convertir a string para el input
         })
       } catch (error) {
         showMessage({
@@ -41,16 +50,21 @@ export default function EditOrderScreen ({ navigation, route }) {
     fetchOrder()
   }, [route.params.orderId])
 
+  // Función para actualizar el pedido
   const updateOrder = async (values) => {
     setBackendErrors([])
     try {
+      // Llamada al endpoint de actualización (PUT /orders/:id/by-owner)
       await update(order.id, values)
+      
       showMessage({
         message: `Order ${order.id} updated successfully`,
         type: 'success',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
       })
+      
+      // IMPORTANTE: Navegar de vuelta a OrdersScreen con dirty flag para refrescar
       navigation.navigate('OrdersScreen', { id: order.restaurantId, dirty: true })
     } catch (error) {
       setBackendErrors(error.errors || [])
@@ -59,7 +73,7 @@ export default function EditOrderScreen ({ navigation, route }) {
 
   return (
     <Formik
-      enableReinitialize
+      enableReinitialize // CRÍTICO: Permite reinicializar cuando se cargan los datos
       validationSchema={validationSchema}
       initialValues={initialValues}
       onSubmit={updateOrder}
@@ -68,6 +82,7 @@ export default function EditOrderScreen ({ navigation, route }) {
         <ScrollView>
           <View style={{ alignItems: 'center' }}>
             <View style={{ width: '60%' }}>
+              {/* Solo dos campos editables según el enunciado */}
               <InputItem name="address" label="Address:" />
               <InputItem name="price" label="Price:" keyboardType="numeric" />
 

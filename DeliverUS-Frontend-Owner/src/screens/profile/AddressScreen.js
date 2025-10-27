@@ -11,10 +11,14 @@ import * as GlobalStyles from '../../styles/GlobalStyles'
 import { AuthorizationContext } from '../../context/AuthorizationContext'
 
 export default function AddressScreen ({ navigation, route }) {
+  /* SOLUTION - Examen Address: Listado de direcciones del usuario */
+  
+  // Estados para el listado y modal de eliminación
   const [addresses, setAddresses] = useState([])
   const [addressToBeDeleted, setAddressToBeDeleted] = useState(null)
   const { loggedInUser } = useContext(AuthorizationContext)
 
+  // Cargar direcciones al montar o cuando cambia la ruta (después de crear/editar)
   useEffect(() => {
     if (loggedInUser) {
       fetchAddresses()
@@ -23,6 +27,7 @@ export default function AddressScreen ({ navigation, route }) {
     }
   }, [loggedInUser, route])
 
+  // Función para obtener las direcciones del usuario logueado
   async function fetchAddresses () {
     try {
       const data = await getAddresses()

@@ -11,17 +11,25 @@ import TextError from '../../components/TextError'
 import { createSchedule } from '../../api/RestaurantEndpoints'
 
 export default function CreateScheduleScreen ({ navigation, route }) {
-  /* SOLUTION */
+  /* SOLUTION - Patrón de Creación de Entidades */
+  
+  // Estado para almacenar errores del backend (validaciones del servidor)
   const [backendErrors, setBackendErrors] = useState()
+  
+  // Valores iniciales del formulario - todos los campos con valores vacíos/null
   const initialScheduleValues = { startTime: null, endTime: null }
+  
+  // Schema de validación con Yup - CRÍTICO: Define reglas de validación del lado del cliente
   const validationSchema = yup.object().shape({
+    // Campo startTime: obligatorio y con formato HH:mm:ss
     startTime: yup
       .string()
       .required('Start time is required')
       .matches(
-        /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/,
+        /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, // Regex para formato de hora
         'The time must be in the HH:mm (e.g. 14:30:00) format'
       ),
+    // Campo endTime: mismas validaciones que startTime
     endTime: yup
       .string()
       .required('End time is required')
@@ -31,33 +39,44 @@ export default function CreateScheduleScreen ({ navigation, route }) {
       )
   })
 
+  // Función para crear un schedule - Patrón estándar de creación
   const create = async (values) => {
+    // Limpiamos errores previos antes de intentar crear
     setBackendErrors([])
     try {
+      // Llamada al endpoint para crear el schedule en el backend
+      // IMPORTANTE: Pasamos route.params.id (restaurantId) y los valores del formulario
       const createdSchedule = await createSchedule(route.params.id, values)
+      
+      // Mostramos mensaje de éxito usando flash message
       showMessage({
         message: `Schedule ${createdSchedule.startTime} - ${createdSchedule.endTime} succesfully created`,
         type: 'success',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
       })
+      
+      // Navegamos de vuelta al detalle del restaurante con flag 'dirty' para refrescar
       navigation.navigate('RestaurantDetailScreen', { id: route.params.id, dirty: true })
     } catch (error) {
+      // Capturamos errores del backend (ej: validaciones del servidor)
       console.log(error)
-      setBackendErrors(error.errors)
+      setBackendErrors(error.errors) // Guardamos errores para mostrarlos en la UI
     }
   }
   return (
+    // Formik: Componente que maneja el estado y la lógica del formulario
     <Formik
-      validationSchema={validationSchema}
-      initialValues={initialScheduleValues}
-      onSubmit={create}>
+      validationSchema={validationSchema} // Schema de validación de Yup
+      initialValues={initialScheduleValues} // Valores iniciales del formulario
+      onSubmit={create}> {/* Función que se ejecuta al enviar el formulario */}
       {({ handleSubmit, setFieldValue, values }) => (
         <ScrollView>
           <View style={{ alignItems: 'center' }}>
             <View style={{ width: '60%' }}>
+              {/* InputItem: Componente personalizado que integra Formik con TextInput */}
               <InputItem
-                name='startTime'
+                name='startTime' // IMPORTANTE: 'name' debe coincidir con el campo en initialValues
                 label='Start Time (HH:mm:ss):'
               />
               <InputItem
@@ -65,14 +84,17 @@ export default function CreateScheduleScreen ({ navigation, route }) {
                 label='End Time (HH:mm:ss):'
               />
 
+              {/* Renderizado de errores del backend - Patrón estándar */}
               {backendErrors &&
                 backendErrors.map((error, index) => <TextError key={index}>{error.param}-{error.msg}</TextError>)
               }
 
+              {/* Botón de guardar - Patrón estándar con estado pressed */}
               <Pressable
-                onPress={ handleSubmit }
+                onPress={ handleSubmit } // Formik maneja la validación antes de llamar a onSubmit
                 style={({ pressed }) => [
                   {
+                    // Cambio de color cuando se presiona el botón
                     backgroundColor: pressed
                       ? GlobalStyles.brandSuccessTap
                       : GlobalStyles.brandSuccess

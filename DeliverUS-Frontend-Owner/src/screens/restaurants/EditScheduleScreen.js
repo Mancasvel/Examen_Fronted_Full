@@ -12,11 +12,17 @@ import { buildInitialValues } from '../Helper'
 import { getRestaurantSchedule, updateSchedule } from '../../api/RestaurantEndpoints'
 
 export default function EditScheduleScreen ({ navigation, route }) {
-  /* SOLUTION */
+  /* SOLUTION - Patrón de Edición de Entidades */
+  
+  // Estados necesarios para edición
   const [backendErrors, setBackendErrors] = useState()
-  const [schedule, setSchedule] = useState()
-
+  const [schedule, setSchedule] = useState() // Almacena el schedule completo
+  
+  // IMPORTANTE: Para edición, initialValues debe ser un estado (no una constante)
+  // porque se actualizará con los datos cargados del backend
   const [initialScheduleValues, setInitialScheduleValues] = useState({ startTime: null, endTime: null })
+  
+  // Schema de validación - Idéntico al de creación
   const validationSchema = yup.object().shape({
     startTime: yup
       .string()
@@ -34,11 +40,17 @@ export default function EditScheduleScreen ({ navigation, route }) {
       )
   })
 
+  // useEffect para cargar los datos del schedule cuando se monta el componente
+  // PATRÓN CRÍTICO: En edición, siempre se debe cargar la entidad primero
   useEffect(() => {
     async function fetchScheduleDetail () {
       try {
+        // Obtenemos el schedule del backend usando los params de la navegación
         const fetchedSchedule = await getRestaurantSchedule(route.params.restaurantId, route.params.scheduleId)
-        setSchedule(fetchedSchedule)
+        setSchedule(fetchedSchedule) // Guardamos el schedule completo
+        
+        // buildInitialValues: Helper que mapea el objeto del backend a los campos del formulario
+        // IMPORTANTE: Esto permite que Formik cargue los valores actuales en el formulario
         setInitialScheduleValues(buildInitialValues(fetchedSchedule, initialScheduleValues))
       } catch (error) {
         showMessage({
@@ -50,18 +62,23 @@ export default function EditScheduleScreen ({ navigation, route }) {
       }
     }
     fetchScheduleDetail()
-  }, [route])
+  }, [route]) // Se ejecuta cuando cambia la ruta (por ejemplo, al navegar a esta pantalla)
 
+  // Función para actualizar el schedule - Similar a create pero usa UPDATE
   const update = async (values) => {
     setBackendErrors([])
     try {
+      // Llamamos al endpoint de actualización con restaurantId, scheduleId y valores
       const updatedSchedule = await updateSchedule(schedule.restaurantId, schedule.id, values)
+      
       showMessage({
         message: `Schedule id ${updatedSchedule.id} succesfully updated`,
         type: 'success',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
       })
+      
+      // Navegamos de vuelta a la pantalla anterior
       navigation.navigate('RestaurantDetailScreen', { id: schedule.restaurantId })
     } catch (error) {
       console.log(error)
@@ -70,7 +87,8 @@ export default function EditScheduleScreen ({ navigation, route }) {
   }
   return (
     <Formik
-      enableReinitialize
+      enableReinitialize // CRÍTICO: Permite que Formik reinicialice el formulario cuando initialValues cambia
+                        // Sin esto, los campos no se actualizarían con los datos cargados del backend
       validationSchema={validationSchema}
       initialValues={initialScheduleValues}
       onSubmit={update}>

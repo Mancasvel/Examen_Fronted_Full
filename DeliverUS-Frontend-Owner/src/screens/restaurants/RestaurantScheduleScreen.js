@@ -14,39 +14,56 @@ import DeleteModal from '../../components/DeleteModal'
 import scheduleIcon from '../../../assets/schedule.png'
 
 export default function RestaurantSchedulesScreen ({ navigation, route }) {
-  /* SOLUTION */
+  /* SOLUTION - Patrón de Listado con CRUD Completo */
+  
+  // Estado para almacenar la lista de schedules
   const [schedules, setSchedules] = useState([])
+  
+  // Estado para el modal de confirmación de eliminación (Patrón estándar)
   const [scheduleToBeDeleted, setScheduleToBeDeleted] = useState(null)
+  
+  // Acceso al contexto de autorización para verificar si hay usuario logueado
   const { loggedInUser } = useContext(AuthorizationContext)
 
+  // useEffect para cargar schedules cuando cambia el usuario o la ruta
+  // IMPORTANTE: Verificar siempre que haya usuario logueado antes de hacer llamadas
   useEffect(() => {
     if (loggedInUser) {
       fetchSchedules()
     } else {
-      setSchedules([])
+      setSchedules([]) // Si no hay usuario, vaciamos la lista
     }
-  }, [loggedInUser, route])
+  }, [loggedInUser, route]) // Dependencias: se ejecuta al montar, al cambiar usuario o al volver a esta pantalla
 
+  // Función para renderizar cada schedule en la FlatList - RF.02
   const renderSchedule = ({ item }) => {
     return (
       <ImageCard
         imageUri={scheduleIcon}
         title={item.name}
         onPress={() => {
+          // Al hacer clic en la card, navegamos a editar el schedule
           navigation.navigate('EditScheduleScreen', { scheduleId: item.id, restaurantId: item.restaurantId })
         }}
       >
         <View>
+          {/* Hora de inicio */}
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <TextSemiBold>Start Time:</TextSemiBold>
             <TextRegular textStyle={{ marginLeft: 5, color: GlobalStyles.brandGreen }}>{item.startTime}</TextRegular>
           </View>
+          
+          {/* Hora de fin */}
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <TextSemiBold>End Time:</TextSemiBold>
             <TextRegular textStyle={{ marginLeft: 5, color: GlobalStyles.brandPrimary }}>{item.endTime}</TextRegular>
           </View>
+          
+          {/* Número de productos asociados - IMPORTANTE: item.products viene del backend */}
           <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
-              <TextSemiBold textStyle={{ color: item.products.length === 0 ? GlobalStyles.brandPrimary : GlobalStyles.brandSecondary }}>{item.products.length} products associated</TextSemiBold>
+              <TextSemiBold textStyle={{ color: item.products.length === 0 ? GlobalStyles.brandPrimary : GlobalStyles.brandSecondary }}>
+                {item.products.length} products associated
+              </TextSemiBold>
           </View>
         </View>
         <View style={styles.actionButtonsContainer}>
@@ -126,9 +143,11 @@ export default function RestaurantSchedulesScreen ({ navigation, route }) {
     )
   }
 
-  /* SOLUTION */
+  /* SOLUTION - RF.02: Visualización de horarios del restaurante */
+  // Función para obtener los schedules del backend
   const fetchSchedules = async () => {
     try {
+      // IMPORTANTE: getRestaurantSchedules devuelve schedules con productos asociados incluidos
       const fetchedSchedules = await getRestaurantSchedules(route.params.id)
       setSchedules(fetchedSchedules)
     } catch (error) {
@@ -141,17 +160,28 @@ export default function RestaurantSchedulesScreen ({ navigation, route }) {
     }
   }
 
+  /* SOLUTION - RF.03: Borrado de horario de restaurante */
+  // Función para eliminar un schedule - Patrón estándar de eliminación con confirmación
   const remove = async (schedule) => {
     try {
+      // Llamada al endpoint de eliminación
       await removeSchedule(schedule.restaurantId, schedule.id)
+      
+      // Refrescamos la lista después de eliminar
       await fetchSchedules()
+      
+      // Cerramos el modal de confirmación
       setScheduleToBeDeleted(null)
+      
+      // Mensaje de éxito
       showMessage({
         message: `Schedule ${schedule.startTime} - ${schedule.endTime} succesfully removed`,
         type: 'success',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
       })
+      
+      // Navegamos al detalle del restaurante para ver productos actualizados
       navigation.navigate('RestaurantDetailScreen', { id: schedule.restaurantId })
     } catch (error) {
       console.log(error)
