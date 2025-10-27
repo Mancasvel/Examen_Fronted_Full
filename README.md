@@ -1,8 +1,755 @@
-# 📚 Guía de Examen - DeliverUS Frontend
+# 🚀 GUÍA EXAMEN DELIVEROUS - REFERENCIA RÁPIDA
 
-## 🎯 Información General
+> **⚠️ REPO PARA USAR DURANTE EL EXAMEN** - Soluciones completas comentadas de 3 exámenes reales
 
-Este repositorio contiene **soluciones de exámenes pasados** del proyecto DeliverUS. El análisis de los commits revela patrones claros sobre qué piden en los exámenes y cómo resolverlos exitosamente.
+## 📑 TABLA DE CONTENIDOS - ACCESO RÁPIDO
+
+### 🔥 **DURANTE EL EXAMEN - USA ESTAS SECCIONES**
+- [⚡ INICIO RÁPIDO](#-inicio-rápido-primeros-5-minutos-del-examen) ← **EMPIEZA AQUÍ**
+- [📋 CHECKLIST EJERCICIO POR EJERCICIO](#-checklist-paso-a-paso) ← **Sigue estos pasos**
+- [💻 CÓDIGO COPY-PASTE](#-código-listo-para-copiar) ← **Templates listos**
+- [🔍 BUSCADOR RÁPIDO](#-buscador-rápido-qué-necesito) ← **¿Qué necesito hacer?**
+- [🆘 ERRORES COMUNES](#-errores-comunes-y-soluciones) ← **Si algo falla**
+
+### 📚 **PARA ESTUDIAR ANTES DEL EXAMEN**
+- [📊 Patrones de Exámenes](#-patrones-identificados-en-los-exámenes)
+- [📝 Exámenes Resueltos](#-resumen-de-exámenes-resueltos)
+- [🛠️ Tecnologías Clave](#️-tecnologías-y-herramientas-clave)
+- [🎓 Consejos de Estudio](#-consejos-de-estudio)
+
+---
+
+## ⚡ INICIO RÁPIDO: PRIMEROS 5 MINUTOS DEL EXAMEN
+
+### 1️⃣ **LEE EL ENUNCIADO COMPLETO** (2 min)
+```
+✅ Identifica cuántos ejercicios hay (normalmente 4)
+✅ Identifica qué tipo de examen es (Schedules/Address/Orders/Otro)
+✅ Mira las figuras/capturas de pantalla
+✅ Identifica qué archivos debes modificar
+```
+
+### 2️⃣ **SETUP DEL ENTORNO** (3 min)
+```bash
+# Windows
+npm run install:all:win
+npm run migrate:backend
+npm run start:backend    # Terminal 1
+npm run start:frontend   # Terminal 2 (espera a que backend esté listo)
+```
+
+### 3️⃣ **ABRE ESTOS ARCHIVOS DE REFERENCIA**
+- 📄 **[CHEATSHEET-EXAMEN.md](./CHEATSHEET-EXAMEN.md)** ← **¡IMPRIME ESTO!** Cheat sheet de 1 página
+- 🔍 **[INDICE-RAPIDO.md](./INDICE-RAPIDO.md)** ← Dónde encontrar cada cosa (con números de línea)
+- 📚 **Este README** ← Explicaciones completas y ejemplos
+- 💻 Archivos comentados en `src/screens/` y `src/api/` ← Código completo funcionando
+
+---
+
+## 📄 CHEAT SHEET DE 1 PÁGINA - IMPRIMIR O TENER VISIBLE
+
+### 🎯 **FLUJO GENERAL DEL EXAMEN**
+```
+1. Leer enunciado completo (2 min)
+2. Setup entorno (3 min)
+3. Crear endpoints (5 min)
+4. Registrar pantallas en Stack (2 min)
+5. Ejercicio 1: Listado (15-20 min)
+6. Ejercicio 2: Formulario (20-25 min)
+7. Ejercicio 3: Vista/Analíticas (10-15 min)
+8. Ejercicio 4: Acción (10-15 min)
+9. Probar TODO (10 min)
+= TOTAL: ~80 minutos
+```
+
+### 🔥 **IMPORTS QUE SIEMPRE NECESITAS**
+```javascript
+import React, { useState, useEffect, useContext } from 'react'
+import { StyleSheet, View, FlatList, Pressable, ScrollView } from 'react-native'
+import { showMessage } from 'react-native-flash-message'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import * as GlobalStyles from '../../styles/GlobalStyles'
+import * as yup from 'yup'
+import { Formik } from 'formik'
+import { AuthorizationContext } from '../../context/AuthorizationContext'
+import TextRegular from '../../components/TextRegular'
+import TextSemiBold from '../../components/TextSemibold'
+import TextError from '../../components/TextError'
+import InputItem from '../../components/InputItem'
+import ImageCard from '../../components/ImageCard'
+import DeleteModal from '../../components/DeleteModal'
+```
+
+### 🎨 **ICONOS MÁS USADOS** (MaterialCommunityIcons)
+```javascript
+// Acciones
+'content-save'     // Guardar
+'pencil'           // Editar
+'delete'           // Eliminar
+'plus-circle'      // Crear/Añadir
+'skip-next'        // Avanzar/Siguiente
+
+// Estados
+'check'            // Completado
+'close'            // Cancelar
+'clock'            // Pendiente
+'timetable'        // Horarios/Schedules
+
+// Otros (Ionicons)
+'star'             // Favorito/Default (relleno)
+'star-outline'     // No favorito (vacío)
+'trash'            // Eliminar
+```
+
+### ⚡ **CÓDIGO ULTRA-RÁPIDO**
+
+**Listado básico (3 min):**
+```javascript
+const [items, setItems] = useState([])
+useEffect(() => { fetchItems() }, [route])
+const fetchItems = async () => {
+  const data = await getAPI(route.params.id)
+  setItems(data)
+}
+<FlatList data={items} renderItem={renderItem} keyExtractor={i => i.id.toString()} />
+```
+
+**Formulario básico (5 min):**
+```javascript
+const [initialValues, setInitialValues] = useState({ name: '' })
+const validationSchema = yup.object().shape({
+  name: yup.string().required('Obligatorio')
+})
+<Formik enableReinitialize initialValues={initialValues} 
+  validationSchema={validationSchema} onSubmit={handleSubmit}>
+  {({ handleSubmit }) => (
+    <>
+      <InputItem name="name" label="Nombre:" />
+      <Pressable onPress={handleSubmit}>...</Pressable>
+    </>
+  )}
+</Formik>
+```
+
+**Botón estándar (1 min):**
+```javascript
+<Pressable
+  onPress={handleAction}
+  style={({ pressed }) => [{
+    backgroundColor: pressed ? GlobalStyles.brandPrimaryTap : GlobalStyles.brandPrimary
+  }, styles.button]}>
+  <MaterialCommunityIcons name='icon-name' color='white' size={20}/>
+  <TextRegular>Texto</TextRegular>
+</Pressable>
+```
+
+### 📊 **ESTRUCTURA DE ARCHIVOS A MODIFICAR**
+```
+src/
+├── api/
+│   ├── XxxEndpoints.js       ← SIEMPRE (crear endpoints)
+│   └── helpers/
+│       └── ApiRequestsHelper  (ya existe, usar get/post/put/destroy/patch)
+├── screens/
+│   ├── xxx/
+│   │   ├── XxxStack.js        ← Registrar pantallas nuevas
+│   │   ├── XxxListScreen.js   ← Ejercicio 1
+│   │   ├── CreateXxxScreen.js ← Ejercicio 2
+│   │   └── EditXxxScreen.js   ← Ejercicio 2
+└── styles/
+    └── GlobalStyles.js         (colores ya definidos)
+```
+
+### 🚨 **ERRORES QUE TE HARÁN PERDER TIEMPO**
+```javascript
+// ❌ Olvidar .toString() en keyExtractor
+keyExtractor={item => item.id}  // ❌ ERROR
+
+// ❌ No exportar funciones de endpoints
+export { getAll }  // ❌ Si usas create, ¡expórtala!
+
+// ❌ No verificar backendErrors
+{backendErrors.map(...)}  // ❌ ERROR si es undefined
+
+// ❌ Olvidar enableReinitialize en edición
+<Formik initialValues={...}>  // ❌ No se actualizará
+
+// ❌ No navegar con dirty flag
+navigation.navigate('ListScreen')  // ❌ No refrescará
+```
+
+### 💡 **TIPS PARA GANAR TIEMPO**
+- ✅ Copia código de los archivos comentados en `src/`
+- ✅ Usa Ctrl+F en este README para buscar lo que necesites
+- ✅ No pierdas tiempo con estilos perfectos, usa los que hay
+- ✅ Prueba cada ejercicio antes de pasar al siguiente
+- ✅ Lee TODAS las pruebas de aceptación del enunciado
+- ✅ Los nombres de las pantallas en Stack deben coincidir con navigation.navigate
+
+### ⏱️ **DISTRIBUCIÓN DE TIEMPO RECOMENDADA**
+| Tarea | Tiempo | Acumulado | Prioridad |
+|-------|--------|-----------|-----------|
+| Leer enunciado completo | 2 min | 2 min | 🔴 CRÍTICO |
+| Setup entorno | 3 min | 5 min | 🔴 CRÍTICO |
+| Crear endpoints | 5 min | 10 min | 🟠 Alta |
+| Registrar pantallas en Stack | 2 min | 12 min | 🟠 Alta |
+| **Ejercicio 1** (Listado) | 15-20 min | 30 min | 🔴 CRÍTICO (3 pts) |
+| **Ejercicio 2** (Formulario) | 20-25 min | 55 min | 🔴 CRÍTICO (3 pts) |
+| **Ejercicio 3** (Vista/Analytics) | 10-15 min | 70 min | 🟡 Media (2 pts) |
+| **Ejercicio 4** (Acción) | 10-15 min | 85 min | 🟡 Media (2 pts) |
+| Pruebas y ajustes | 10 min | 95 min | 🟠 Alta |
+| **Buffer** | 5 min | 100 min | - |
+
+**💡 Estrategia**: Si vas mal de tiempo, asegura los Ejercicios 1 y 2 (6 puntos) antes que todo.
+
+---
+
+## 📋 CHECKLIST PASO A PASO
+
+### ✅ **EJERCICIO 1: Listado (3 puntos)** - 15-20 minutos
+
+```javascript
+// ARCHIVO: XxxScreen.js (pantalla de listado)
+
+// 1. Estados necesarios
+const [items, setItems] = useState([])
+const { loggedInUser } = useContext(AuthorizationContext)
+
+// 2. useEffect para cargar datos
+useEffect(() => {
+  if (loggedInUser) {
+    fetchItems()
+  } else {
+    setItems([])
+  }
+}, [loggedInUser, route])
+
+// 3. Función fetch
+const fetchItems = async () => {
+  try {
+    const data = await getItemsAPI(route.params.id)
+    setItems(data)
+  } catch (error) {
+    showMessage({
+      message: `Error: ${error}`,
+      type: 'error',
+      style: GlobalStyles.flashStyle,
+      titleStyle: GlobalStyles.flashTextStyle
+    })
+  }
+}
+
+// 4. Renderizar cada item
+const renderItem = ({ item }) => (
+  <ImageCard imageUri={item.image} title={item.name}>
+    <TextRegular>{item.description}</TextRegular>
+    <TextSemiBold>{item.price}€</TextSemiBold>
+  </ImageCard>
+)
+
+// 5. FlatList
+<FlatList
+  data={items}
+  renderItem={renderItem}
+  keyExtractor={item => item.id.toString()} // ⚠️ .toString() es OBLIGATORIO
+  ListHeaderComponent={renderHeader}
+  ListEmptyComponent={renderEmpty}
+/>
+```
+
+**⚠️ NO OLVIDES:**
+- ✅ Importar `useState`, `useEffect`, `useContext`
+- ✅ `.toString()` en `keyExtractor`
+- ✅ `ListEmptyComponent` para cuando no hay datos
+
+---
+
+### ✅ **EJERCICIO 2: Crear/Editar (3 puntos)** - 20-25 minutos
+
+```javascript
+// ARCHIVO: CreateEditXxxScreen.js
+
+// 1. Estados
+const [backendErrors, setBackendErrors] = useState()
+const [initialValues, setInitialValues] = useState({ field1: '', field2: '' })
+
+// 2. Validación Yup
+const validationSchema = yup.object().shape({
+  field1: yup.string().required('Campo obligatorio'),
+  field2: yup.number().moreThan(0, 'Debe ser mayor que 0')
+})
+
+// 3. Solo para EDICIÓN: useEffect para cargar datos
+useEffect(() => {
+  if (route.params?.id) {
+    async function fetchData() {
+      try {
+        const data = await getById(route.params.id)
+        setInitialValues(buildInitialValues(data, initialValues))
+      } catch (error) {
+        showMessage({ message: `Error: ${error}`, type: 'error', ... })
+      }
+    }
+    fetchData()
+  }
+}, [route])
+
+// 4. Función submit
+const handleSubmit = async (values) => {
+  setBackendErrors([])
+  try {
+    const result = route.params?.id 
+      ? await update(route.params.id, values)
+      : await create(values)
+    
+    showMessage({
+      message: 'Guardado correctamente',
+      type: 'success',
+      style: GlobalStyles.flashStyle,
+      titleStyle: GlobalStyles.flashTextStyle
+    })
+    navigation.navigate('ListScreen', { dirty: true })
+  } catch (error) {
+    console.log(error)
+    setBackendErrors(error.errors)
+  }
+}
+
+// 5. Formik
+<Formik
+  enableReinitialize  // ⚠️ CRÍTICO para edición
+  validationSchema={validationSchema}
+  initialValues={initialValues}
+  onSubmit={handleSubmit}
+>
+  {({ handleSubmit }) => (
+    <ScrollView>
+      <InputItem name="field1" label="Campo 1:" />
+      <InputItem name="field2" label="Campo 2:" keyboardType="numeric" />
+      
+      {backendErrors && backendErrors.map((error, index) => (
+        <TextError key={index}>{error.param}-{error.msg}</TextError>
+      ))}
+      
+      <Pressable onPress={handleSubmit} style={...}>
+        <MaterialCommunityIcons name='content-save' color='white' size={20}/>
+        <TextRegular>Save</TextRegular>
+      </Pressable>
+    </ScrollView>
+  )}
+</Formik>
+```
+
+**⚠️ NO OLVIDES:**
+- ✅ `enableReinitialize` en Formik para edición
+- ✅ Renderizar `backendErrors`
+- ✅ Navegar con `{ dirty: true }`
+
+---
+
+### ✅ **EJERCICIO 3: Vista/Analíticas (2 puntos)** - 10-15 minutos
+
+```javascript
+// ARCHIVO: Donde se muestre la vista adicional
+
+// 1. Estado para los datos
+const [analytics, setAnalytics] = useState(null)
+
+// 2. Fetch en useEffect
+useEffect(() => {
+  fetchAnalytics()
+}, [route])
+
+const fetchAnalytics = async () => {
+  try {
+    const data = await getAnalyticsAPI(route.params.id)
+    setAnalytics(data)
+  } catch (error) {
+    showMessage({ message: `Error: ${error}`, type: 'error', ... })
+  }
+}
+
+// 3. Renderizar (ejemplo analíticas en grid 2x2)
+const renderAnalytics = () => (
+  <View style={styles.analyticsContainer}>
+    <View style={styles.analyticsRow}>
+      <View style={styles.analyticsCell}>
+        <TextRegular>Métrica 1</TextRegular>
+        <TextSemiBold>{analytics.metric1}</TextSemiBold>
+      </View>
+      <View style={styles.analyticsCell}>
+        <TextRegular>Métrica 2</TextRegular>
+        <TextSemiBold>{analytics.metric2}</TextSemiBold>
+      </View>
+    </View>
+    <View style={styles.analyticsRow}>
+      {/* Segunda fila */}
+    </View>
+  </View>
+)
+
+// 4. Mostrar con renderizado condicional
+{analytics !== null && renderAnalytics()}
+```
+
+**Estilos para grid 2x2:**
+```javascript
+analyticsContainer: {
+  backgroundColor: GlobalStyles.brandPrimaryTap,
+  paddingVertical: 10
+},
+analyticsRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-around' // ⚠️ IMPORTANTE
+},
+analyticsCell: {
+  width: '45%',
+  backgroundColor: GlobalStyles.brandPrimary,
+  borderRadius: 8,
+  padding: 10
+}
+```
+
+---
+
+### ✅ **EJERCICIO 4: Acción (2 puntos)** - 10-15 minutos
+
+```javascript
+// Ejemplo: Botón para cambiar estado, eliminar, etc.
+
+// 1. Handler de la acción
+const handleAction = async (item) => {
+  try {
+    await performActionAPI(item.id)
+    showMessage({
+      message: 'Acción completada',
+      type: 'success',
+      style: GlobalStyles.flashStyle,
+      titleStyle: GlobalStyles.flashTextStyle
+    })
+    fetchItems() // Refrescar lista
+  } catch (error) {
+    showMessage({
+      message: `Error: ${error}`,
+      type: 'danger',
+      style: GlobalStyles.flashStyle,
+      titleStyle: GlobalStyles.flashTextStyle
+    })
+  }
+}
+
+// 2. Botón con renderizado condicional (ejemplo: no mostrar si estado es X)
+{item.status !== 'final_status' &&
+  <Pressable
+    onPress={() => handleAction(item)}
+    style={({ pressed }) => [
+      { backgroundColor: pressed ? GlobalStyles.brandGreenTap : GlobalStyles.brandGreen },
+      styles.button
+    ]}
+  >
+    <MaterialCommunityIcons name='icon-name' color='white' size={20}/>
+    <TextRegular>Acción</TextRegular>
+  </Pressable>
+}
+
+// 3. Para eliminación: usar DeleteModal
+const [itemToDelete, setItemToDelete] = useState(null)
+
+<DeleteModal
+  isVisible={itemToDelete !== null}
+  onCancel={() => setItemToDelete(null)}
+  onConfirm={() => confirmDelete(itemToDelete)}
+>
+  <TextRegular>¿Confirmar acción?</TextRegular>
+</DeleteModal>
+```
+
+---
+
+## 💻 CÓDIGO LISTO PARA COPIAR
+
+### 🔌 **ENDPOINTS - Siempre lo mismo**
+
+```javascript
+// ARCHIVO: src/api/XxxEndpoints.js
+import { get, post, put, destroy, patch } from './helpers/ApiRequestsHelper'
+
+function getAll() {
+  return get('resource')
+}
+
+function getById(id) {
+  return get(`resource/${id}`)
+}
+
+function create(data) {
+  return post('resource', data)
+}
+
+function update(id, data) {
+  return put(`resource/${id}`, data)
+}
+
+function remove(id) {
+  return destroy(`resource/${id}`)
+}
+
+// Acción específica (ejemplo: cambiar estado)
+function specificAction(id) {
+  return patch(`resource/${id}/action`)
+}
+
+export { getAll, getById, create, update, remove, specificAction }
+```
+
+**⚠️ NO OLVIDES:**
+- ✅ Usar template literals con backticks para URLs con params
+- ✅ Exportar TODAS las funciones al final
+
+---
+
+### 🧭 **NAVEGACIÓN - Registrar pantallas**
+
+```javascript
+// ARCHIVO: src/screens/xxx/XxxStack.js
+import NewScreen from './NewScreen'
+
+// Dentro del Stack.Navigator
+<Stack.Screen
+  name='NewScreenName'
+  component={NewScreen}
+  options={{ title: 'Título' }}
+/>
+```
+
+**Para navegar:**
+```javascript
+// Con parámetros
+navigation.navigate('ScreenName', { id: item.id })
+
+// Con dirty flag (para refrescar al volver)
+navigation.navigate('ScreenName', { dirty: true })
+```
+
+---
+
+### ✅ **VALIDACIONES YUP MÁS COMUNES**
+
+```javascript
+const validationSchema = yup.object().shape({
+  // String obligatorio
+  name: yup.string().required('Nombre obligatorio'),
+  
+  // Email
+  email: yup.string().email('Email inválido').required('Obligatorio'),
+  
+  // Número positivo
+  price: yup.number()
+    .required('Obligatorio')
+    .moreThan(0, 'Debe ser mayor que 0'),
+  
+  // Código postal (5 dígitos)
+  zipCode: yup.string()
+    .matches(/^[0-9]{5}$/, 'Debe tener 5 dígitos')
+    .required('Obligatorio'),
+  
+  // Hora HH:mm:ss
+  time: yup.string()
+    .required('Obligatorio')
+    .matches(
+      /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/,
+      'Formato HH:mm:ss (ej: 14:30:00)'
+    ),
+  
+  // Boolean
+  isActive: yup.boolean(),
+  
+  // Opcional
+  description: yup.string()
+})
+```
+
+---
+
+### 🎨 **ESTILOS COMUNES - Copy-Paste**
+
+```javascript
+const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
+  button: {
+    borderRadius: 8,
+    height: 40,
+    padding: 10,
+    width: '100%',
+    marginTop: 20,
+    marginBottom: 20
+  },
+  actionButton: {
+    borderRadius: 8,
+    height: 40,
+    marginTop: 12,
+    margin: '1%',
+    padding: 10,
+    alignSelf: 'center',
+    width: '50%'
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    bottom: 5,
+    position: 'absolute',
+    width: '90%'
+  },
+  text: {
+    fontSize: 16,
+    color: 'white',
+    textAlign: 'center',
+    marginLeft: 5
+  },
+  emptyList: {
+    textAlign: 'center',
+    padding: 50
+  },
+  // Para analíticas en grid 2x2
+  analyticsContainer: {
+    backgroundColor: GlobalStyles.brandPrimaryTap,
+    paddingVertical: 10
+  },
+  analyticsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  },
+  analyticsCell: {
+    margin: 5,
+    width: '45%',
+    backgroundColor: GlobalStyles.brandPrimary,
+    borderRadius: 8,
+    padding: 10
+  }
+})
+```
+
+---
+
+## 🔍 BUSCADOR RÁPIDO: ¿QUÉ NECESITO?
+
+### **"Necesito mostrar un listado"**
+➡️ Ver [Ejercicio 1 Checklist](#-ejercicio-1-listado-3-puntos---15-20-minutos)
+- Archivos de ejemplo: `OrdersScreen.js`, `RestaurantScheduleScreen.js`, `AddressScreen.js`
+
+### **"Necesito crear/editar algo con formulario"**
+➡️ Ver [Ejercicio 2 Checklist](#-ejercicio-2-creareditar-3-puntos---20-25-minutos)
+- Archivos de ejemplo: `EditOrderScreen.js`, `CreateScheduleScreen.js`, `EditScheduleScreen.js`
+
+### **"Necesito mostrar analíticas/estadísticas"**
+➡️ Ver [Ejercicio 3 Checklist](#-ejercicio-3-vistaanalíticas-2-puntos---10-15-minutos)
+- Archivo de ejemplo: `OrdersScreen.js` (función `renderAnalytics`)
+
+### **"Necesito un botón que cambie estado/elimine"**
+➡️ Ver [Ejercicio 4 Checklist](#-ejercicio-4-acción-2-puntos---10-15-minutos)
+- Archivos de ejemplo: `OrdersScreen.js` (nextStatus), `RestaurantScheduleScreen.js` (remove)
+
+### **"Necesito crear endpoints"**
+➡️ Ver [Código Endpoints](#-endpoints---siempre-lo-mismo)
+- Archivos de ejemplo: `OrderEndpoints.js`, `AddressEndpoints.js`, `RestaurantEndpoints.js`
+
+### **"Necesito validar un formulario"**
+➡️ Ver [Validaciones Yup](#-validaciones-yup-más-comunes)
+
+### **"Necesito registrar una pantalla nueva"**
+➡️ Ver [Navegación](#-navegación---registrar-pantallas)
+- Archivo de ejemplo: `RestaurantsStack.js`
+
+---
+
+## 🆘 ERRORES COMUNES Y SOLUCIONES
+
+### ❌ **Error: "Cannot read property 'id' of undefined"**
+```javascript
+// ❌ MAL: No esperas a que se carguen los datos
+return <Text>{item.id}</Text>
+
+// ✅ BIEN: Renderizado condicional
+return item ? <Text>{item.id}</Text> : <ActivityIndicator />
+```
+
+### ❌ **Error: "Each child should have a unique key"**
+```javascript
+// ❌ MAL: Falta key o no es único
+items.map(item => <View><Text>{item.name}</Text></View>)
+
+// ✅ BIEN: Usar key único
+items.map(item => <View key={item.id}><Text>{item.name}</Text></View>)
+
+// ✅ MEJOR: En FlatList usar keyExtractor
+<FlatList
+  data={items}
+  keyExtractor={item => item.id.toString()} // ⚠️ .toString()
+  renderItem={renderItem}
+/>
+```
+
+### ❌ **Error: "Formik values not updating"**
+```javascript
+// ❌ MAL: Falta enableReinitialize en edición
+<Formik initialValues={initialValues} onSubmit={handleSubmit}>
+
+// ✅ BIEN: Agregar enableReinitialize
+<Formik 
+  enableReinitialize  // ⚠️ CRÍTICO para edición
+  initialValues={initialValues} 
+  onSubmit={handleSubmit}
+>
+```
+
+### ❌ **Error: "Navigation not working"**
+```javascript
+// ❌ MAL: Pantalla no registrada en Stack
+navigation.navigate('NewScreen', { id: 1 })
+
+// ✅ BIEN: Primero registrar en Stack.js
+<Stack.Screen name='NewScreen' component={NewScreen} options={{title: 'New'}} />
+```
+
+### ❌ **Error: "Endpoint 404 Not Found"**
+```javascript
+// ❌ MAL: Falta exportar la función
+export { getAll, getById } // ⚠️ Falta create
+
+// ✅ BIEN: Exportar TODAS las funciones que usas
+export { getAll, getById, create, update, remove }
+```
+
+### ❌ **Error: "BackendErrors is not iterable"**
+```javascript
+// ❌ MAL: backendErrors puede ser undefined
+{backendErrors.map(...)}
+
+// ✅ BIEN: Verificar que existe
+{backendErrors && backendErrors.map((error, index) => ...)}
+```
+
+### ❌ **Error: "Validation failed"**
+```javascript
+// ❌ MAL: Campo no coincide con validationSchema
+<InputItem name="nombre" ... />
+validationSchema: yup.object().shape({
+  name: yup.string().required() // ⚠️ name !== nombre
+})
+
+// ✅ BIEN: Nombres deben coincidir exactamente
+<InputItem name="name" ... />
+validationSchema: yup.object().shape({
+  name: yup.string().required()
+})
+```
+
+---
+
+## 🎯 INFORMACIÓN GENERAL
+
+Este repositorio contiene **soluciones comentadas de 3 exámenes reales** con patrones claros y repetibles.
 
 ---
 
@@ -879,15 +1626,15 @@ const styles = StyleSheet.create({
 ## ⚡ Quick Start - Preparación del Entorno
 
 ### Windows
-```bash
+    ```bash
 npm run install:all:win
-npm run migrate:backend
+    npm run migrate:backend
 npm run start:backend  # Terminal 1
 npm run start:frontend # Terminal 2
-```
+    ```
 
 ### Linux/MacOS
-```bash
+    ```bash
 npm run install:all:bash
 npm run migrate:backend
 npm run start:backend  # Terminal 1
