@@ -15,7 +15,7 @@ import TextError from '../../components/TextError'
 import { prepareEntityImages } from '../../api/helpers/FileUploadHelper'
 import { buildInitialValues } from '../Helper'
 
-export default function ProfileScreen () {
+export default function ProfileScreen ({ navigation, route }) {
   const { loggedInUser, signOut, updateProfile } = useContext(AuthorizationContext)
   const [backendErrors, setBackendErrors] = useState()
 
@@ -154,6 +154,15 @@ export default function ProfileScreen () {
                   {backendErrors &&
                     backendErrors.map((error, index) => <TextError key={index}>{error.param}-{error.msg}</TextError>)
                   }
+                  <Pressable onPress={() => navigation.navigate('AddressScreen')}
+                    style={({ pressed }) => [{
+                      backgroundColor: pressed
+                        ? GlobalStyles.brandSuccessTap
+                        : GlobalStyles.brandSuccess
+                    }, styles.button]}
+                    >
+                    <TextRegular textStyle={styles.text}>Edit Shipping address</TextRegular>
+                  </Pressable>
 
                   <Pressable disabled={!isValid} onPress={handleSubmit}
                     style={({ pressed }) => [
