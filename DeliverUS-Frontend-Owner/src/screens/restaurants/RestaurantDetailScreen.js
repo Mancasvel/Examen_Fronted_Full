@@ -52,8 +52,9 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
           </View>
         </Pressable>
 
+        {/* SOLUTION */}
         <Pressable
-          onPress={() => navigation.navigate('OrdersScreen', { id: restaurant.id })
+          onPress={() => navigation.navigate('RestaurantSchedulesScreen', { id: restaurant.id })
           }
           style={({ pressed }) => [
             {
@@ -64,9 +65,9 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
             styles.button
           ]}>
           <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
-            <MaterialCommunityIcons name='order-bool-ascending-variant' color={'white'} size={20} />
+            <MaterialCommunityIcons name='timetable' color={'white'} size={20} />
             <TextRegular textStyle={styles.text}>
-              Check orders
+              Manage schedules
             </TextRegular>
           </View>
         </Pressable>
@@ -82,9 +83,28 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       >
         <TextRegular numberOfLines={2}>{item.description}</TextRegular>
         <TextSemiBold textStyle={styles.price}>{item.price.toFixed(2)}€</TextSemiBold>
-        {!item.availability &&
-          <TextRegular textStyle={styles.availability }>Not available</TextRegular>
-        }
+        {/* SOLUTION */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {item.schedule
+              ? <>
+                  <MaterialCommunityIcons name="timetable" size={18} color={GlobalStyles.brandGreen} />
+                  <TextRegular textStyle={{ color: GlobalStyles.brandGreen }}>{item.schedule.startTime} - {item.schedule.endTime}</TextRegular>
+              </>
+              : <>
+                <MaterialCommunityIcons name="timetable" size={18} color={GlobalStyles.brandPrimary} />
+                <TextRegular textStyle={{ color: GlobalStyles.brandPrimary }}>Not scheduled</TextRegular>
+              </>
+            }
+          </View>
+          <View>
+            {!item.availability &&
+              <TextRegular textStyle={styles.availability}>Not available</TextRegular>
+            }
+          </View>
+        </View>
+        {/* END SOLUTION */}
+
          <View style={styles.actionButtonsContainer}>
           <Pressable
             onPress={() => navigation.navigate('EditProductScreen', { id: item.id })
@@ -245,8 +265,7 @@ const styles = StyleSheet.create({
     marginLeft: 5
   },
   availability: {
-    textAlign: 'right',
-    marginRight: 5,
+    /* SOLUTION */
     color: GlobalStyles.brandSecondary
   },
   actionButton: {
