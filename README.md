@@ -4,6 +4,8 @@
 
 ## 📑 TABLA DE CONTENIDOS - ACCESO RÁPIDO
 
+[Schedules Solution url](https://github.com/IISSI2-IS-2025/ExLab-Frontend-Julio-Address/pull/1/files)
+
 ### 🔥 **DURANTE EL EXAMEN - USA ESTAS SECCIONES**
 - [⚡ INICIO RÁPIDO](#-inicio-rápido-primeros-5-minutos-del-examen) ← **EMPIEZA AQUÍ**
 - [📋 CHECKLIST EJERCICIO POR EJERCICIO](#-checklist-paso-a-paso) ← **Sigue estos pasos**
